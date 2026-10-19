@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anguardin Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-base: #050505;
+            --card-bg: #101012;
+            --card-border: #1f1f23;
+            --text-main: #ffffff;
+            --text-muted: #8b8b93;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --accent: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            /* Красивое фоновое свечение сверху */
+            background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px; /* Чуть шире для ПК */
+            padding: 20px;
+        }
+
+        /* Верхняя панель (Баланс / Профиль) */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .balance-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .balance-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-amount {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        /* Заголовок */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #fff 0%, #a1a1a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Сетка каталога */
+        .catalog {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        /* Медиа-запрос для ПК (чтобы было 2 колонки) */
+        @media (min-width: 600px) {
+            .catalog {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Карточка */
+        .item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Свечение при наведении */
+        .item:hover {
+            border-color: #333;
+            box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .item:active {
+            transform: scale(0.98);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .item-title-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .item-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stock-badge {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .item-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto; /* Прижимает к низу */
+            background: #000;
+            padding: 10px 10px 10px 20px;
+            border-radius: 14px;
+            border: 1px solid #222;
+        }
+
+        .item-price {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        /* Кнопка */
+        .buy-btn {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .buy-btn:hover {
+            background-color: #e5e5e5;
+        }
+
+        .buy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .loader {
+            grid-column: span 2;
+            text-align: center;
+            padding: 60px 0;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        /* Анимация появления */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Верхняя панель -->
+        <div class="topbar">
+            <div class="user-info">
+                <div class="avatar" id="user-avatar">S</div>
+                <div class="balance-info">
+                    <span class="balance-label">Ваш баланс</span>
+                    <span class="balance-amount" id="user-balance">0 ₽</span>
+                </div>
+            </div>
+            <div class="stock-badge" style="background: rgba(255,255,255,0.05);">В сети 🟢</div>
+        </div>
+
+        <div class="header">
+            <h1>Anguardin Shop</h1>
+            <p>Качественно • Надежно • Быстро</p>
+        </div>
+
+        <div class="catalog" id="catalog">
+            <div class="loader">Загрузка каталога...</div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#050505');
+        tg.setBackgroundColor('#050505');
+
+        // Получаем данные юзера
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('user-avatar').innerText = user.first_name ? user.first_name[0].toUpperCase() : 'S';
+            // Пока ставим тестовый баланс, потом будем брать из БД
+            document.getElementById('user-balance').innerText = "1 500 ₽"; 
+        }
+
+        const testData = [
+            { id: 1, title: "США 🇺🇸", desc: "Отлеж 30+ дней", price: 150, stock: 12 },
+            { id: 2, title: "Европа 🇪🇺", desc: "Физ, чистые IP", price: 200, stock: 5 },
+            { id: 3, title: "Индия 🇮🇳", desc: "Свежая рега", price: 50, stock: 34 },
+            { id: 4, title: "РФ 🇷🇺", desc: "С отлежкой", price: 100, stock: 8 }
+        ];
+
+        function renderCatalog(items) {
+            const catalogEl = document.getElementById('catalog');
+            catalogEl.innerHTML = ''; 
+
+            items.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'item';
+                itemEl.style.animationDelay = `${index * 0.1}s`;
+                
+                itemEl.innerHTML = `
+                    <div class="item-header">
+                        <div class="item-title-wrap">
+                            <div class="item-title">${item.title}</div>
+                            <div class="item-desc">${item.desc}</div>
+                        </div>
+                        <div class="stock-badge">В наличии: ${item.stock}</div>
+                    </div>
+                    
+                    <div class="item-bottom">
+                        <div class="item-price">${item.price} ₽</div>
+                        <button class="buy-btn" onclick="buyItem(event, ${item.id}, ${item.price})">Купить</button>
+                    </div>
+                `;
+                catalogEl.appendChild(itemEl);
+            });
+        }
+
+        function buyItem(event, itemId, price) {
+            event.stopPropagation(); 
+            
+            // Вибрация (отклик)
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            tg.showPopup({
+                title: 'Подтверждение',
+                message: `Вы хотите купить аккаунт за ${price} ₽?`,
+                buttons: [
+                    {id: 'cancel', type: 'cancel', text: 'Отмена'},
+                    {id: 'buy', type: 'default', text: 'Купить'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'buy') {
+                    // Отправляем сигнал боту
+                    tg.sendData(JSON.stringify({
+                        action: "buy",
+                        item_id: itemId,
+                        user_id: tg.initDataUnsafe?.user?.id
+                    }));
+                    tg.close();
+                }
+            });
+        }
+
+        renderCatalog(testData);
+    </script>
+</body>
+</html>
