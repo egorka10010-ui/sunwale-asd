@@ -1,357 +1,188 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anguardin Shop</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-base: #050505;
-            --card-bg: #101012;
-            --card-border: #1f1f23;
-            --text-main: #ffffff;
-            --text-muted: #8b8b93;
-            --btn-bg: #ffffff;
-            --btn-text: #000000;
-            --accent: #ffffff;
-        }
-        
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            font-family: 'Inter', -apple-system, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            /* Красивое фоновое свечение сверху */
-            background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 50%);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px; /* Чуть шире для ПК */
-            padding: 20px;
-        }
-
-        /* Верхняя панель (Баланс / Профиль) */
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 12px 20px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 36px;
-            height: 36px;
-            background: #222;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 14px;
-        }
-
-        .balance-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .balance-label {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .balance-amount {
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        /* Заголовок */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(180deg, #fff 0%, #a1a1a6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header p {
-            margin: 8px 0 0 0;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        /* Сетка каталога */
-        .catalog {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        /* Медиа-запрос для ПК (чтобы было 2 колонки) */
-        @media (min-width: 600px) {
-            .catalog {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* Карточка */
-        .item {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        /* Свечение при наведении */
-        .item:hover {
-            border-color: #333;
-            box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-        }
-
-        .item:active {
-            transform: scale(0.98);
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .item-title-wrap {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .item-title {
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .item-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .stock-badge {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .item-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto; /* Прижимает к низу */
-            background: #000;
-            padding: 10px 10px 10px 20px;
-            border-radius: 14px;
-            border: 1px solid #222;
-        }
-
-        .item-price {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        /* Кнопка */
-        .buy-btn {
-            background-color: var(--btn-bg);
-            color: var(--btn-text);
-            border: none;
-            padding: 10px 24px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 800;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .buy-btn:hover {
-            background-color: #e5e5e5;
-        }
-
-        .buy-btn:active {
-            transform: scale(0.95);
-        }
-
-        .loader {
-            grid-column: span 2;
-            text-align: center;
-            padding: 60px 0;
-            font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 12px;
-        }
-
-        /* Анимация появления */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .item {
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Anguardin Shop</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0c;--panel:#141418;--panel2:#1c1c22;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#e8e8ec;--muted:#7a7a85;--muted2:#9a9aa5;--accent:#ffffff;
+  --green:#22c55e;--red:#ef4444;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow-x:hidden;user-select:none}
+#app{min-height:100vh;padding:20px;max-width:600px;margin:0 auto}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.logo{font-size:20px;font-weight:800;letter-spacing:-.03em}
+.logo span{color:var(--muted)}
+.balance-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.balance-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.balance-val{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.status-dot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--green)}
+.status-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+.title{text-align:center;margin-bottom:24px}
+.title h1{font-size:28px;font-weight:800;letter-spacing:-.03em}
+.title p{font-size:12px;color:var(--muted);letter-spacing:.1em;margin-top:4px}
+.grid{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;transition:.2s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)}
+.card:hover{border-color:var(--border2)}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.badge{padding:4px 10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-size:10px;font-weight:700;color:var(--green)}
+.card-desc{font-size:11px;color:var(--muted);margin-top:4px;margin-left:0}
+.card-bottom{display:flex;justify-content:space-between;align-items:center}
+.price{font-size:24px;font-weight:800}
+.buy-btn{padding:10px 24px;background:var(--accent);color:#000;font-size:13px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:.2s}
+.buy-btn:active{transform:scale(.95)}
+.buy-btn:disabled{opacity:.5}
+.spinner{display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px}
+.spinner div{width:40px;height:40px;border:3px solid var(--border);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;left:20px;right:20px;background:var(--panel2);border:1px solid var(--border);padding:14px;border-radius:12px;font-size:13px;text-align:center;opacity:0;transition:.3s;pointer-events:none;transform:translateY(10px)}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
 </head>
 <body>
-
-    <div class="container">
-        
-        <!-- Верхняя панель -->
-        <div class="topbar">
-            <div class="user-info">
-                <div class="avatar" id="user-avatar">S</div>
-                <div class="balance-info">
-                    <span class="balance-label">Ваш баланс</span>
-                    <span class="balance-amount" id="user-balance">0 ₽</span>
-                </div>
-            </div>
-            <div class="stock-badge" style="background: rgba(255,255,255,0.05);">В сети 🟢</div>
-        </div>
-
-        <div class="header">
-            <h1>Anguardin Shop</h1>
-            <p>Качественно • Надежно • Быстро</p>
-        </div>
-
-        <div class="catalog" id="catalog">
-            <div class="loader">Загрузка каталога...</div>
-        </div>
+<div id="app">
+  <div class="spinner" id="loader"><div></div><span style="color:var(--muted);font-size:13px">Загрузка...</span></div>
+  
+  <div id="content" style="display:none">
+    <div class="hdr">
+      <div class="logo">Anguardin<span>.</span></div>
+      <div style="width:32px;height:32px;background:var(--panel2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px" id="initials">A</div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#050505');
-        tg.setBackgroundColor('#050505');
+    <div class="balance-card">
+      <div>
+        <div class="balance-label">Ваш баланс</div>
+        <div class="balance-val" id="balance">0 ₽</div>
+      </div>
+      <div class="status-dot" id="status">В сети</div>
+    </div>
 
-        // Получаем данные юзера
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('user-avatar').innerText = user.first_name ? user.first_name[0].toUpperCase() : 'S';
-            // Пока ставим тестовый баланс, потом будем брать из БД
-            document.getElementById('user-balance').innerText = "1 500 ₽"; 
-        }
+    <div class="title">
+      <h1>Anguardin Shop</h1>
+      <p>КАЧЕСТВЕННО • НАДЕЖНО • БЫСТРО</p>
+    </div>
 
-        const testData = [
-            { id: 1, title: "США 🇺🇸", desc: "Отлеж 30+ дней", price: 150, stock: 12 },
-            { id: 2, title: "Европа 🇪🇺", desc: "Физ, чистые IP", price: 200, stock: 5 },
-            { id: 3, title: "Индия 🇮🇳", desc: "Свежая рега", price: 50, stock: 34 },
-            { id: 4, title: "РФ 🇷🇺", desc: "С отлежкой", price: 100, stock: 8 }
-        ];
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+<div class="toast" id="toast">Ошибка</div>
 
-        function renderCatalog(items) {
-            const catalogEl = document.getElementById('catalog');
-            catalogEl.innerHTML = ''; 
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-            items.forEach((item, index) => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'item';
-                itemEl.style.animationDelay = `${index * 0.1}s`;
-                
-                itemEl.innerHTML = `
-                    <div class="item-header">
-                        <div class="item-title-wrap">
-                            <div class="item-title">${item.title}</div>
-                            <div class="item-desc">${item.desc}</div>
-                        </div>
-                        <div class="stock-badge">В наличии: ${item.stock}</div>
-                    </div>
-                    
-                    <div class="item-bottom">
-                        <div class="item-price">${item.price} ₽</div>
-                        <button class="buy-btn" onclick="buyItem(event, ${item.id}, ${item.price})">Купить</button>
-                    </div>
-                `;
-                catalogEl.appendChild(itemEl);
-            });
-        }
+const API_URL = 'http://153.52.66.153:8080'; // Адрес твоего API на сервере
+let userId = tg?.initDataUnsafe?.user?.id || null;
+let userBalance = 0;
 
-        function buyItem(event, itemId, price) {
-            event.stopPropagation(); 
-            
-            // Вибрация (отклик)
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            tg.showPopup({
-                title: 'Подтверждение',
-                message: `Вы хотите купить аккаунт за ${price} ₽?`,
-                buttons: [
-                    {id: 'cancel', type: 'cancel', text: 'Отмена'},
-                    {id: 'buy', type: 'default', text: 'Купить'}
-                ]
-            }, (buttonId) => {
-                if (buttonId === 'buy') {
-                    // Отправляем сигнал боту
-                    tg.sendData(JSON.stringify({
-                        action: "buy",
-                        item_id: itemId,
-                        user_id: tg.initDataUnsafe?.user?.id
-                    }));
-                    tg.close();
-                }
-            });
-        }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-        renderCatalog(testData);
-    </script>
+function updateBalance(newBal) {
+  userBalance = newBal;
+  document.getElementById('balance').textContent = newBal.toFixed(0) + ' ₽';
+}
+
+async function loadProfile() {
+  if (!userId) {
+    document.getElementById('loader').innerHTML = '<span style="color:var(--red)">Откройте через Telegram</span>';
+    return;
+  }
+  try {
+    const res = await fetch(`${API_URL}/api/profile?user_id=${userId}`);
+    const data = await res.json();
+    if (data.ok) {
+      updateBalance(data.balance);
+      document.getElementById('initials').textContent = (tg.initDataUnsafe.user.first_name || 'A')[0].toUpperCase();
+    }
+  } catch(e) {
+    showToast('Ошибка загрузки профиля');
+  }
+}
+
+async function loadCatalog() {
+  try {
+    const res = await fetch(`${API_URL}/api/catalog`);
+    const data = await res.json();
+    if (data.ok) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      if (data.stock.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0">Склад пуст. Загляните позже.</div>';
+      }
+      data.stock.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-name">${item.geo} ${item.acc_type}</div>
+            <div class="badge">В наличии: ${item.cnt}</div>
+          </div>
+          <div class="card-desc">Отлега 30+ дней</div>
+          <div class="card-bottom" style="margin-top:16px">
+            <div class="price">${item.min_price} ₽</div>
+            <button class="buy-btn" onclick="buyAccount('${item.geo}', '${item.acc_type}', this)">Купить</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  } catch(e) {
+    showToast('Ошибка загрузки каталога');
+  }
+}
+
+async function buyAccount(geo, acc_type, btn) {
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch(`${API_URL}/api/buy`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ user_id: userId, geo: geo, acc_type: acc_type })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      showToast('✅ Успешно! Аккаунт отправлен в ЛС');
+      // Перезапрашиваем профиль, чтобы обновить баланс
+      const profileRes = await fetch(`${API_URL}/api/profile?user_id=${userId}`);
+      const profileData = await profileRes.json();
+      if (profileData.ok) updateBalance(profileData.balance);
+      loadCatalog(); // Обновляем остатки на складе
+    } else {
+      showToast('❌ ' + data.error);
+    }
+  } catch(e) {
+    showToast('❌ Ошибка сервера');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Купить';
+  }
+}
+
+async function init() {
+  if (!userId) return;
+  await loadProfile();
+  await loadCatalog();
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+}
+
+init();
+</script>
 </body>
 </html>
